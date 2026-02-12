@@ -5,22 +5,29 @@ MCP server for searching and reading binary document files from Claude Code.
 ## Install
 
 ```bash
-uvx docsearch
-# or
-pip install docsearch
-```
-
-## Claude Code Setup
-
-```bash
-claude mcp add --scope user docsearch -- uvx docsearch
+claude mcp add --scope user docsearch -- uvx --from git+https://github.com/AllenComm/mcp-docsearch docsearch
 ```
 
 Or per-project:
 
 ```bash
-claude mcp add docsearch -- uvx docsearch
+claude mcp add docsearch -- uvx --from git+https://github.com/AllenComm/mcp-docsearch docsearch
 ```
+
+Or add directly to your MCP config (`~/.claude/.mcp.json` for user-scope, `.mcp.json` for project-scope):
+
+```json
+{
+  "mcpServers": {
+    "docsearch": {
+      "command": "uvx",
+      "args": ["--from", "git+https://github.com/AllenComm/mcp-docsearch", "docsearch"]
+    }
+  }
+}
+```
+
+Restart Claude Code after changing the config.
 
 ## CLAUDE.md
 
@@ -87,8 +94,6 @@ npx @modelcontextprotocol/inspector uv run docsearch
 ```bash
 claude mcp add --scope user docsearch -- uv run --directory /path/to/docsearch docsearch
 ```
-
-Restart Claude Code after changing the config.
 
 ## Examples
 
