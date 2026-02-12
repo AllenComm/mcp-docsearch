@@ -5,7 +5,9 @@ import zipfile
 from pathlib import Path
 from xml.etree import ElementTree
 
+from typing import Annotated
 from mcp.server.fastmcp import FastMCP
+from pydantic import Field
 
 logging.basicConfig(stream=sys.stderr, level=logging.INFO, format="%(levelname)s: %(message)s")
 logger = logging.getLogger("docsearch")
@@ -244,7 +246,13 @@ def filter_sections(sections: list[tuple[str, str]], range_str: str, ext: str) -
 
 
 @mcp.tool()
-def docgrep(directory: str, pattern: str, case_sensitive: bool = False, file_types: list[str] | None = None, max_results: int = 100) -> str:
+def docgrep(
+    directory: Annotated[str, Field(description="Path to the directory to search. Searched recursively, skipping hidden directories.")],
+    pattern: Annotated[str, Field(description="Python regex pattern to match against line content.")],
+    case_sensitive: Annotated[bool, Field(description="Use case-sensitive matching. Default is case-insensitive.")] = False,
+    file_types: Annotated[list[str] | None, Field(description="Limit to specific file types, with or without dots (e.g. ['pdf', 'docx']). Defaults to all supported types.")] = None,
+    max_results: Annotated[int, Field(description="Maximum number of matching lines to return.")] = 100,
+) -> str:
     """Search through document files (PDF, DOCX, PPTX, XLSX, ODT, ODS, ODP, RTF, EPUB) for text matching a regex pattern. Returns grep-like output: filepath:section:matching_line"""
     root = Path(directory).resolve()
     if not root.is_dir():
@@ -294,14 +302,18 @@ def docgrep(directory: str, pattern: str, case_sensitive: bool = False, file_typ
 
 
 @mcp.tool()
-def docread(filepath: str, range: str | None = None) -> str:
-    """Read and extract text from a document file (PDF, DOCX, PPTX, XLSX, ODT, ODS, ODP, RTF, EPUB). Use range to filter output by section. Format-specific:
-  PDF: page numbers (e.g. '1-3', '1,3,5-7')
-  PPTX/ODP: slide numbers (e.g. '2-4')
-  EPUB: chapter numbers (e.g. '1-5')
-  XLSX/ODS: sheet name or 1-based index, with optional row range after colon (e.g. '1', 'Sheet1', '1:1-100', 'Revenue:50-200')
-  DOCX/ODT/RTF: line numbers (e.g. '1-50', '100-200')
-Output auto-truncated at 40000 chars."""
+def docread(
+    filepath: Annotated[str, Field(description="Path to the document file.")],
+    range: Annotated[str | None, Field(
+        description="Filter output to specific sections. Format depends on file type:\n"
+        "- PDF: page numbers (e.g. '1-3', '1,3,5-7')\n"
+        "- PPTX/ODP: slide numbers (e.g. '2-4')\n"
+        "- EPUB: chapter numbers (e.g. '1-5')\n"
+        "- XLSX/ODS: sheet name or 1-based index, with optional row range after colon (e.g. '1', 'Sheet1', '1:1-100', 'Revenue:50-200')\n"
+        "- DOCX/ODT/RTF: line numbers (e.g. '1-50', '100-200')"
+    )] = None,
+) -> str:
+    """Read and extract text from a document file (PDF, DOCX, PPTX, XLSX, ODT, ODS, ODP, RTF, EPUB). Returns sections formatted as '=== section_label ===\\ntext'. Output auto-truncated at 40000 chars."""
     path = Path(filepath).resolve()
     if not path.is_file():
         raise ValueError(f"File not found: {filepath}")
