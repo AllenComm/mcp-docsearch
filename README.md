@@ -6,7 +6,9 @@ MCP server for searching and reading binary document files.
 
 - [uv](https://docs.astral.sh/uv/) (for `uvx`)
 
-## Install (Claude Code)
+## Install
+
+### Claude Code
 
 User-scope (available in all projects):
 
@@ -33,11 +35,26 @@ Or add directly to your MCP config (`~/.claude/.mcp.json` for user-scope, `.mcp.
 }
 ```
 
-Restart Claude Code after changing the config.
+### OpenCode
 
-### CLAUDE.md
+Add to your `opencode.json`:
 
-Add to `~/.claude/CLAUDE.md` so Claude Code knows when to use these tools:
+```json
+{
+  "mcp": {
+    "docsearch": {
+      "type": "local",
+      "command": ["uvx", "--from", "git+https://github.com/AllenComm/mcp-docsearch", "docsearch"],
+      "enabled": true,
+      "timeout": 30000
+    }
+  }
+}
+```
+
+### Agent Instructions
+
+Add to your `AGENTS.md` or `CLAUDE.md` so your agent knows when to use these tools:
 
 ```
 Use the docgrep and docread MCP tools instead of grep/read for binary documents (PDF, DOCX, PPTX, XLSX, ODT, ODS, ODP, RTF, EPUB).
