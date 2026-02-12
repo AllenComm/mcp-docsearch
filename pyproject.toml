@@ -1,0 +1,23 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "docsearch"
+version = "0.1.0"
+description = "MCP server for searching and reading binary document files (PDF, DOCX, PPTX, XLSX)"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+dependencies = [
+    "mcp>=1.0.0",
+    "pymupdf>=1.24.0",
+    "python-docx>=1.0.0",
+    "python-pptx>=1.0.0",
+    "openpyxl>=3.1.0",
+    "odfpy>=1.4.0",
+    "striprtf>=0.0.26",
+]
+
+[project.scripts]
+docsearch = "docsearch:main"
