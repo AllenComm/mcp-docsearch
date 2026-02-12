@@ -1,14 +1,20 @@
 # docsearch
 
-MCP server for searching and reading binary document files from Claude Code.
+MCP server for searching and reading binary document files.
 
-## Install
+## Requirements
+
+- [uv](https://docs.astral.sh/uv/) (for `uvx`)
+
+## Install (Claude Code)
+
+User-scope (available in all projects):
 
 ```bash
 claude mcp add --scope user docsearch -- uvx --from git+https://github.com/AllenComm/mcp-docsearch docsearch
 ```
 
-Or per-project:
+Project-scope (available only in the current project):
 
 ```bash
 claude mcp add docsearch -- uvx --from git+https://github.com/AllenComm/mcp-docsearch docsearch
@@ -29,7 +35,7 @@ Or add directly to your MCP config (`~/.claude/.mcp.json` for user-scope, `.mcp.
 
 Restart Claude Code after changing the config.
 
-## CLAUDE.md
+### CLAUDE.md
 
 Add to `~/.claude/CLAUDE.md` so Claude Code knows when to use these tools:
 
@@ -55,7 +61,7 @@ Use the docgrep and docread MCP tools instead of grep/read for binary documents 
 
 ### `docgrep`
 
-Search through documents for text matching a regex pattern.
+Search through documents for text matching a regex pattern. Returns `filepath:section:matching_line`.
 
 **Parameters:**
 - `directory` (required) — path to search recursively
@@ -64,11 +70,14 @@ Search through documents for text matching a regex pattern.
 - `file_types` — filter to specific extensions, e.g. `["pdf", "docx"]`
 - `max_results` — default `100`
 
-**Output format:** `filepath:section:matching_line`
+```
+docgrep(directory="/home/user/reports", pattern="quarterly revenue")
+docgrep(directory="/home/user/docs", pattern="TODO|FIXME", file_types=["docx"])
+```
 
 ### `docread`
 
-Read full text content from a single document.
+Read full text content from a single document. Output is auto-truncated at 40,000 characters — use `range` to narrow results for large documents.
 
 **Parameters:**
 - `filepath` (required) — path to the document
@@ -77,39 +86,10 @@ Read full text content from a single document.
   - **PPTX/ODP:** slide numbers, e.g. `"2-3"`
   - **XLSX/ODS:** sheet name or 1-based index, with optional row range after colon, e.g. `"1"`, `"Sheet1"`, `"1:1-100"`, `"Revenue:50-200"`
   - **EPUB:** chapter numbers, e.g. `"1-5"`
-  - **DOCX/ODT/RTF:** line numbers (e.g. `"1-50"`, `"100-200"`)
-
-Output is auto-truncated at 40,000 characters. Use `range` to narrow results for large documents.
-
-## Development
-
-### Testing with MCP Inspector
-
-```bash
-npx @modelcontextprotocol/inspector uv run docsearch
-```
-
-### Testing with Claude Code
-
-```bash
-claude mcp add --scope user docsearch -- uv run --directory /path/to/docsearch docsearch
-```
-
-## Examples
+  - **DOCX/ODT/RTF:** line numbers, e.g. `"1-50"`, `"100-200"`
 
 ```
-# Search all docs in a directory for "quarterly revenue"
-docgrep(directory="/home/user/reports", pattern="quarterly revenue")
-
-# Read a specific PDF, pages 1-3
 docread(filepath="/home/user/reports/q4.pdf", range="1-3")
-
-# Search only Word docs for a pattern
-docgrep(directory="/home/user/docs", pattern="TODO|FIXME", file_types=["docx"])
-
-# Read first 100 rows of the first sheet in an Excel file
 docread(filepath="/home/user/data/sales.xlsx", range="1:1-100")
-
-# Read rows 50-200 of a sheet by name
 docread(filepath="/home/user/data/sales.xlsx", range="Revenue:50-200")
 ```
